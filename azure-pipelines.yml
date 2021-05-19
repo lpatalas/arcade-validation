@@ -62,7 +62,8 @@ stages:
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
             queue: BuildPool.Server.Amd64.VS2017.Arcade.Open
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            queue: BuildPool.Server.Amd64.VS2017.Arcade
+            name: NetCore1ESInternal-Int
+            demands: ImageOverride -equals BuildPool.Server.Amd64.VS2017
         variables:
         - _InternalBuildArgs: ''
 
