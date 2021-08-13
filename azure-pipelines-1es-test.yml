@@ -5,8 +5,8 @@ stages:
   jobs:
   - job: Run1ESTestJob
     pool:
-      name: NetCore1ESPool-Svc-Internal-PR126 # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
-      demands: ImageOverride -equals Build.Server.Amd64.VS2017-PR126
+      name: NetCore1ESPool-Svc-Internal-PR127 # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
+      demands: ImageOverride -equals Build.Server.Amd64.VS2017-PR127
     steps:
     - task: PowerShell@2
       inputs:
