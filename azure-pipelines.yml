@@ -53,7 +53,7 @@ stages:
       - job: Windows_NT
         pool:
           name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
-          demands: ImageOverride -equals Build.Server.Amd64.VS2017-PR125
+          demands: ImageOverride -equals Build.Server.Amd64.VS2017-PR126
         variables:
         - _InternalBuildArgs: ''
 
@@ -103,7 +103,7 @@ stages:
         - job: Validate_Signing
           pool:
             name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
-            demands: ImageOverride -equals Build.Server.Amd64.VS2017-PR125
+            demands: ImageOverride -equals Build.Server.Amd64.VS2017-PR126
           strategy:
             matrix:
               Test_Signing:
