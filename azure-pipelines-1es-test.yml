@@ -13,3 +13,15 @@ stages:
         targetType: inline
         script: Write-Host test
       displayName: Run script
+    - task: MicroBuildSigningPlugin@2
+      displayName: Install MicroBuild plugin
+      inputs:
+        signType: test
+        zipSources: false
+        feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
+      env:
+        TeamName: DotNetCore
+    - task: MicroBuildCleanup@1
+      displayName: Execute Microbuild cleanup tasks
+      env:
+        TeamName: DotNetCore
