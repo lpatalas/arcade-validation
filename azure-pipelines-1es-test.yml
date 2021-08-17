@@ -1,27 +1,86 @@
+variables:
+  - name: _TeamName
+    value: DotNetCore
+  - name: _PublishUsingPipelines
+    value: true
+  - name: PoolProvider
+    value: NetCore1ESPool-Svc-Internal-PR17463
+  - name: ImageName
+    value: Build.Server.Amd64.VS2017-PR17463
+
 trigger: none
 
+resources:
+  containers:
+  - container: LinuxContainer
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-14.04-cross-0cd4667-20170319080304
+
 stages:
-- stage: Run1ESTestStage
+- stage: build
+  displayName: Build
   jobs:
-  - job: Run1ESTestJob
-    pool:
-      name: NetCore1ESPool-Svc-Internal-PR17463
-      demands: ImageOverride -equals Build.Server.Amd64.VS2017-PR17463
-    steps:
-    - task: PowerShell@2
-      inputs:
-        targetType: inline
-        script: Write-Host test
-      displayName: Run script
-    - task: MicroBuildSigningPlugin@2
-      displayName: Install MicroBuild plugin
-      inputs:
-        signType: test
-        zipSources: false
-        feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
-      env:
-        TeamName: DotNetCore
-    - task: MicroBuildCleanup@1
-      displayName: Execute Microbuild cleanup tasks
-      env:
-        TeamName: DotNetCore
+  - template: /eng/common/templates/jobs/jobs.yml
+    parameters:
+      enableMicrobuild: true
+      enablePublishBuildArtifacts: true
+      enablePublishBuildAssets: true
+      enablePublishUsingPipelines: ${{ variables._PublishUsingPipelines }}
+      enableTelemetry: true
+      helixRepo: dotnet/arcade-validation
+      jobs:
+      - job: Windows_NT
+        pool:
+          name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
+          demands: ImageOverride -equals $(ImageName)
+        variables:
+          _InternalBuildArgs: ''
+          _BuildConfig: Debug
+          _SignType: test
+
+        steps:
+        - checkout: self
+          clean: true
+        - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+          - task: PowerShell@2
+            displayName: Setup Private Feeds Credentials
+            condition: eq(variables['Agent.OS'], 'Windows_NT')
+            inputs:
+              filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+              arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+            env:
+              Token: $(dn-bot-dnceng-artifact-feeds-rw)
+        # Use utility script to run script command dependent on agent OS.
+        - script: eng\common\cibuild.cmd
+            -configuration $(_BuildConfig)
+            -prepareMachine
+            $(_InternalBuildArgs)
+          displayName: Windows Build / Publish
+        - task: ComponentGovernanceComponentDetection@0
+          displayName: Component Governance scan
+
+      - job: Validate_Signing
+        pool:
+          name: $(PoolProvider)
+          demands: ImageOverride -equals $(ImageName)
+        variables:
+          _BuildConfig: Debug
+          _SignType: test
+        steps:
+          - checkout: self
+            clean: true
+          - task: CopyFiles@2
+            displayName: Copy test packages to artifacts directory
+            inputs:
+              sourceFolder: $(Build.SourcesDirectory)\src\validation\resources
+              targetFolder: $(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\NonShipping
+          - powershell: eng\common\build.ps1
+              -configuration $(_BuildConfig)
+              -restore
+              -prepareMachine
+              -sign
+              -ci
+              /p:DotNetSignType=$(_SignType)
+              /p:TeamName=DotNetCore
+              /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+            displayName: Sign packages
+
