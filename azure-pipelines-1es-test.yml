@@ -5,8 +5,9 @@ variables:
     value: true
   - name: PoolProvider
     value: NetCore1ESPool-Svc-Internal-PR17463
-  - name: ImageName
-    value: Build.Server.Amd64.VS2017-PR17463
+  - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - group: AzureDevOps-Artifact-Feeds-Pats
+    - group: SDL_Settings
 
 trigger: none
 
@@ -33,10 +34,17 @@ stages:
           name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
           demands: ImageOverride -equals Build.Server.Amd64.VS2017-PR17463
         variables:
-          _InternalBuildArgs: ''
-          _BuildConfig: Debug
-          _SignType: test
+        - _InternalBuildArgs: ''
 
+        strategy:
+          matrix:
+            Build_Release:
+              _BuildConfig: Release
+              _SignType: test
+            ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+              Build_Debug:
+                _BuildConfig: Debug
+                _SignType: test
         steps:
         - checkout: self
           clean: true
@@ -58,4 +66,30 @@ stages:
         - task: ComponentGovernanceComponentDetection@0
           displayName: Component Governance scan
 
-
+  # Jobs that should only run as part of internal builds.
+      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+        - job: Validate_Signing
+          pool:
+            name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
+            demands: ImageOverride -equals Build.Server.Amd64.VS2017-PR17463
+          variables:
+            _BuildConfig: Debug
+            _SignType: test
+          steps:
+            - checkout: self
+              clean: true
+            - task: CopyFiles@2
+              displayName: Copy test packages to artifacts directory
+              inputs:
+                sourceFolder: $(Build.SourcesDirectory)\src\validation\resources
+                targetFolder: $(Build.SourcesDirectory)\artifacts\packages\$(_BuildConfig)\NonShipping
+            - powershell: eng\common\build.ps1
+                -configuration $(_BuildConfig)
+                -restore
+                -prepareMachine
+                -sign
+                -ci
+                /p:DotNetSignType=$(_SignType)
+                /p:TeamName=DotNetCore
+                /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+              displayName: Sign packages
