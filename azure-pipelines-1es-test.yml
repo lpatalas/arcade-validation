@@ -29,6 +29,13 @@ stages:
       enableTelemetry: true
       helixRepo: dotnet/arcade-validation
       jobs:
+      - job: DumpLog
+        pool:
+          name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
+          demands: ImageOverride -equals Build.Server.Amd64.VS2017-PR17463
+        steps:
+        - powershell: Get-Content C:\helix-prep\first-run.log
+          displayName: Dump logs
       - job: Windows_NT
         pool:
           name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
