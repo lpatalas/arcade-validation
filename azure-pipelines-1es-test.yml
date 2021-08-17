@@ -2,7 +2,7 @@ variables:
   - name: _TeamName
     value: DotNetCore
   - name: _PublishUsingPipelines
-    value: true
+    value: false
   - name: PoolProvider
     value: NetCore1ESPool-Svc-Internal-PR17463
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -62,9 +62,14 @@ stages:
         pool:
           name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
           demands: ImageOverride -equals Build.Server.Amd64.VS2017-PR17463
-        variables:
-        - _BuildConfig: Debug
-        - _SignType: test
+        strategy:
+            matrix:
+              Test_Signing:
+                _BuildConfig: Debug
+                _SignType: test
+              Real_Signing:
+                _BuildConfig: Release
+                _SignType: real
         steps:
           - checkout: self
             clean: true
