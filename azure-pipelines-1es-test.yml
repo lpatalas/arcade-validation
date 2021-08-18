@@ -10,3 +10,7 @@ stages:
     steps:
     - powershell: Get-Content C:\helix-prep\first-run.log
       displayName: Dump logs
+    - powershell: Get-Content C:\helix-prep\run-first-run.bat
+      displayName: Dump run-first-run.bat
+    - powershell: Get-Content C:\helix-prep\first-run.bat
+      displayName: Dump first-run.bat
