@@ -14,3 +14,9 @@ stages:
       displayName: Dump run-first-run.bat
     - powershell: Get-Content C:\helix-prep\first-run.bat
       displayName: Dump first-run.bat
+    - powershell: Get-Content C:\helix-prep\InstallESRP\output.txt
+      displayName: Dump output.txt
+    - powershell: Get-Content C:\helix-prep\InstallESRP\RunOnce.bat
+      displayName: Dump RunOnce.bat
+    - powershell: Get-Content C:\helix-prep\InstallESRP\RunTask.bat
+      displayName: Dump RunTask.bat
