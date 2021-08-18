@@ -20,3 +20,15 @@ stages:
       displayName: Dump RunOnce.bat
     - powershell: Get-Content C:\helix-prep\InstallESRP\RunTask.bat
       displayName: Dump RunTask.bat
+    - task: MicroBuildSigningPlugin@2
+      displayName: Install MicroBuild plugin
+      inputs:
+        signType: real
+        zipSources: false
+        feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
+      env:
+        TeamName: DotNetCore
+    - task: MicroBuildCleanup@1
+      displayName: Execute Microbuild cleanup tasks
+      env:
+        TeamName: DotNetCore
