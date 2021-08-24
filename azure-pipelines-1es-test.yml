@@ -8,7 +8,7 @@ stages:
       name: NetCore1ESPool-Svc-Internal-PR300
       demands: ImageOverride -equals Build.Server.Amd64.VS2017-PR300
     steps:
-    - powershell: Get-Content C:\helix-prep\first-run.log
+    - powershell: Get-Content C:\helix-prep\run-first-run.log
       displayName: Dump logs
     - task: MicroBuildSigningPlugin@2
       displayName: Install MicroBuild plugin
