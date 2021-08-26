@@ -22,3 +22,10 @@ stages:
       displayName: Execute Microbuild cleanup tasks
       env:
         TeamName: DotNetCore
+  - job: RunLinux
+    pool:
+      name: NetCore1ESPool-Svc-Internal
+      demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
+    steps:
+    - bash: echo Linux test
+      displayName: Run bash
