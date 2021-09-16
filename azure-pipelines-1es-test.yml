@@ -5,8 +5,8 @@ stages:
   jobs:
   - job: DumpLog
     pool:
-      name: NetCore1ESPool-Svc-Internal
-      demands: ImageOverride -equals Build.Server.Amd64.VS2017
+      name: NetCore1ESPool-Svc-Internal-PR18118
+      demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017-PR18118
     steps:
     - powershell: Get-Content C:\helix-prep\run-first-run.log
       displayName: Dump logs
@@ -22,10 +22,3 @@ stages:
       displayName: Execute Microbuild cleanup tasks
       env:
         TeamName: DotNetCore
-  - job: RunLinux
-    pool:
-      name: NetCore1ESPool-Svc-Internal
-      demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
-    steps:
-    - bash: echo Linux test
-      displayName: Run bash
