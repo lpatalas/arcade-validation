@@ -3,10 +3,10 @@ trigger: none
 stages:
 - stage: Run1ESTestStage
   jobs:
-  - job: DumpLog
+  - job: Test1ES
     pool:
-      name: NetCore1ESPool-Svc-Internal-Int
-      demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017-Int
+      name: NetCore1ESPool-Svc-Internal
+      demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017
     steps:
     - task: MicroBuildSigningPlugin@2
       displayName: Install MicroBuild plugin
