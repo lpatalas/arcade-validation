@@ -5,8 +5,8 @@ stages:
   jobs:
   - job: Test1ES
     pool:
-      name: NetCore1ESPool-Svc-Internal
-      demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017
+      name: NetCore1ESPool-Svc-Public
+      demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017.Open
     steps:
     - task: MicroBuildSigningPlugin@2
       displayName: Install MicroBuild plugin
