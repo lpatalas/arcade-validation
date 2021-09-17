@@ -5,11 +5,9 @@ stages:
   jobs:
   - job: DumpLog
     pool:
-      name: NetCore1ESPool-Svc-Internal-PR18118
-      demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017-PR18118
+      name: NetCore1ESPool-Svc-Internal-Int
+      demands: ImageOverride -equals Build.Windows.10.Amd64.VS2017-Int
     steps:
-    - powershell: Get-Content C:\helix-prep\run-first-run.log
-      displayName: Dump logs
     - task: MicroBuildSigningPlugin@2
       displayName: Install MicroBuild plugin
       inputs:
