@@ -3,6 +3,8 @@ variables:
     value: DotNetCore
   - name: _PublishUsingPipelines
     value: true
+  - name: PoolImageSuffix
+    value: ''
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - group: AzureDevOps-Artifact-Feeds-Pats
     - group: SDL_Settings
@@ -15,9 +17,13 @@ variables:
   - ${{ if and(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'Schedule')) }}:
     - name: PoolProvider
       value: NetCore1ESPool-Public-Int
+    - name: PoolImageSuffix
+      value: -Int
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'Schedule')) }}:
     - name: PoolProvider
       value: NetCore1ESPool-Internal-Int
+    - name: PoolImageSuffix
+      value: -Int
 
 trigger:
   batch: true
@@ -58,11 +64,11 @@ stages:
       jobs:
       - job: Windows_NT
         pool:
-          name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
+          name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCore1ESPool-Public; Internal default is NetCore1ESPool-Internal
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            demands: ImageOverride -equals Build.Server.Amd64.VS2017.Open
+            demands: ImageOverride -equals Build.Server.Amd64.VS2017.Open$(PoolImageSuffix)
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-            demands: ImageOverride -equals Build.Server.Amd64.VS2017
+            demands: ImageOverride -equals Build.Server.Amd64.VS2017$(PoolImageSuffix)
         variables:
         - _InternalBuildArgs: ''
 
@@ -111,8 +117,8 @@ stages:
         container: LinuxContainer
         pool:
           ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-            name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
-            demands: ImageOverride -equals Build.Ubuntu.1604.Amd64.Open
+            name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCore1ESPool-Public; Internal default is NetCore1ESPool-Internal
+            demands: ImageOverride -equals Build.Ubuntu.1604.Amd64.Open$(PoolImageSuffix)
           ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
             name: Hosted Ubuntu 1604
         strategy:
@@ -180,8 +186,8 @@ stages:
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
         - job: Validate_Signing
           pool:
-            name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCorePublic-Pool; Internal default is NetCoreInternal-Pool
-            demands: ImageOverride -equals Build.Server.Amd64.VS2017
+            name: $(PoolProvider) # This is a queue-time parameter; Public default is NetCore1ESPool-Public; Internal default is NetCore1ESPool-Internal
+            demands: ImageOverride -equals Build.Server.Amd64.VS2017$(PoolImageSuffix)
           strategy:
             matrix:
               Test_Signing:
